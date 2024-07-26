@@ -1,0 +1,122 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# MRLOVA
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+`MRLOVA`is an R package that enhances Mendelian Randomization analysis by augmenting the latent phenotype of the outcome and explicitly disentangling horizontal and vertical pleiotropy effects. This allows for an explicit assessment of the exclusion restriction assumption and iteratively refines causal estimates through the expectation-maximization algorithm. This approach offers a unique and potentially more precise framework compared to existing MR methods.
+
+Furthermore, the package includes permutation testing, which provides a non-parametric approach to hypothesis testing, enabling control over the type 1 error rate under the null hypothesis without necessitating specific distributional assumptions. Additionally, `MRLOVA` offers two additional tests: the directional pleiotropy test and the InSIDE assumption test.
+
+There are three functions:
+
+-   **`mr_lova()`**  main function that performs MR analysis and provides causal effect estimate.
+-   **`InSIDE()`**  performs Instrument Strength Independent of Direct Effect (InSIDE) assumption test.
+-   **`directional()`**  performs directional Pleiotropy test.
+And you can view their help pages by prepending their names with a question mark:
+
+```{r}
+?mr_lova
+?InSIDE
+?directional
+```
+## Installation
+
+You can install the development version of MRLOVA from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("lamessad/MRLOVA")
+```
+## Steps to be followed
+Step 1: Load the summary statistics of instrumental variables for the exposure and outcome.
+
+Step 2: Harmonize the data by checking the allele frequency of palindromic SNPs and flipping the sign of betaY if the effect allele in the study associated with exposure is the non-effect allele in the study associated with the outcome.
+
+Step 3: Standardize the summary statistics before performing the MR analysis. This approach is the same as suggested in the software MRmix (Qi and Chatterjee, Nat Commun 2019).
+step 4; MR analysis
+
+If we are already using the "TwoSampleMR" package, we can utilize the harmonized summary data to create the input parameters for MRLOVA as follows:
+
+``` r
+#library(TwoSampleMR)
+#library(MRLOVA)
+#dat=harmonize_data(exposure_data, outcome_data)
+#detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
+#betaY=dat$z.outcome/sqrt(dat$samplesize.outcome)
+#betaXse=1/sqrt(dat$samplesize.exposure)
+#betaYse=1/sqrt(dat$samplesize.outcome)
+#ny=dat$samplesize.outcome
+#est = mr_lova(betaY, betaX, betaYse, betaXse, ny, 0.05, 5e-8, 100,"log.txt")  
+```
+## Example 1
+
+Here is an example demonstrating how to apply MRLOVA methods to infer the causal effect from exposure to outcome, assuming the  first three steps mentioned above have been carried out.
+
+
+```{r example}
+library(MRLOVA)
+data("dat")
+head(dat)
+betaX = dat$betaX 
+betaY = dat$betaY
+betaXse = dat$betaXse
+betaYse = dat$betaYse
+ny = dat$ny
+#MR
+est = mr_lova(betaY, betaX, betaYse, betaXse, ny) 
+est
+```
+
+### Convergence and Permutation Warnings
+The package includes built-in warnings to help ensure the robustness of your analysis. Please be aware of the following conditions and corresponding warnings:
+`Convergence Warnings`
+If the number of iterations is less than 3 or greater than 10, the package will issue a warning:
+
+```r
+#warning("Please check convergence.")
+#log_message("Warning: Please check convergence.", log_file)
+```
+This indicates potential issues with the convergence process. Details of the convergence are saved in the `log.txt` file in the directory where you are running the analysis. Reviewing this log file can provide insights and help troubleshoot potential problems.
+
+`Permutation Warnings`
+If the number of permutations is less than `1/est$CausEstP` of the estimate without permutation, the package will issue a warning:
+```r
+#warning("# permutations may not be sufficient, given the p-value of causal effects, causal p-value = ", mrlova_result$CausEstP)
+#log_message(paste("# permutations may not be sufficient, given the p-value of causal effects, causal p-value =", mrlova_result$CausEstP), log_file)
+```
+# InSIDE
+
+
+```{r}
+# InSIDE assumption test
+inside = InSIDE(betaY, betaX, as.numeric(est$CausEst))  
+
+inside
+```
+
+# direction
+
+```{r}
+#directional pleiotropy test
+
+dir_pleiotropy=directional(betaY, betaX, as.numeric(est$CausEst))
+
+dir_pleiotropy
+```
+
+
