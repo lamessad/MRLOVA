@@ -4,18 +4,22 @@
 \alias{directional}
 \title{Perform Directional Pleiotropy Test}
 \usage{
-directional(u)
+directional(betaY, betaX, causEst)
 }
 \arguments{
-\item{u}{Numeric vector of direct genetic effect of the outcome.}
+\item{betaY}{beta of the outcome, recommended to be in standardized scale.}
+
+\item{betaX}{beta of the exposure, recommended to be in standardized scale.}
+
+\item{causEst}{the estimated causal effect of the exposure on the outcome.}
 }
 \value{
 A list containing:
-\item{mean}{The mean of the direct genetic effect of outcome \code{u} estimated from the t-test.}
+\item{mean}{The mean of the direct genetic effect of the outcome.}
 \item{p_value}{The p-value from the t-test.}
 }
 \description{
-This function performs a one-sample t-test to assess whether the mean of the residuals (\code{u}) is significantly different from zero. This test helps in evaluating the presence of directional pleiotropy by checking if the residuals deviate significantly from zero.
+This function performs a one-sample t-test to determine whether the mean of the direct genetic effect on the outcome is significantly different from zero. This test helps evaluate the presence of directional pleiotropy by checking if the mean of the direct genetic effect on the outcome deviates significantly from zero.
 }
 \details{
 The function performs a t-test where the null hypothesis is that the mean of \code{u} is zero. The result includes the estimated mean of \code{u} and the p-value from the t-test.

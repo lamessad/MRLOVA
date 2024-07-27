@@ -2,25 +2,25 @@
 % Please edit documentation in R/InSIDE.R
 \name{InSIDE}
 \alias{InSIDE}
-\title{Instrument Strength Independent of Direct Effect (InSIDE) assumption}
+\title{Instrument Strength Independent of Direct Effect (InSIDE) assumption test}
 \usage{
 InSIDE(betaY, betaX, causEst)
 }
 \arguments{
-\item{betaY}{Numeric vector of effect sizes for the outcome.}
+\item{betaY}{beta of the outcome, recommended to be in standardized scale.}
 
-\item{betaX}{Numeric vector of effect sizes for the exposure.}
+\item{betaX}{beta of the exposure, recommended to be in standardized scale.}
 
-\item{causEst}{Numeric value representing the estimated causal effect of the exposure on the outcome.}
+\item{causEst}{the estimated causal effect of the exposure on the outcome.}
 }
 \value{
 A list containing:
-\item{cor}{The estimate of the Pearson correlation coefficient between the direct genetic effect of the outcome and genetic effect of the exposure.}
-\item{p_value}{The p-value from the correlation test.}
+\item{cor}{The estimate of the Pearson correlation coefficient between the direct genetic effect of the outcome and the genetic effect of the exposure.}
+\item{p_value}{The p-value from the Pearson correlation test.}
 }
 \description{
 This function calculates direct genetic effect of outcome  (\code{u}) from the difference between observed effect sizes of the outcome (\code{betaY}) and the predicted effect sizes based on the exposure (\code{betaX}) and a given causal estimate (\code{causEst}). It then performs a correlation test between these estimated the direct genetic effect of outcome  (\code{u}) and the exposure effect sizes.
 }
 \details{
-The function calculates direct genetic effect of outcome \code{u} as \code{betaY - causEst * betaX}. Then performs a Pearson correlation test between the \code{u} and \code{betaX} to assess the relationship between the  exposure genetic effect and the direct genetic effect of the outcome. The function performs a pearson correlation test where the null hypothesis is that the correlation is zero.
+The function calculates direct genetic effect of the outcome \code{u} as \code{betaY - causEst * betaX}. It then performs a Pearson correlation test between \code{u} and \code{betaX} to estimate the correlation between the  exposure genetic effect and the direct genetic effect of the outcome.
 }

@@ -6,20 +6,24 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-`MRLOVA`is an R package that enhances Mendelian Randomization analysis
-by augmenting the latent phenotype of the outcome and explicitly
-disentangling horizontal and vertical pleiotropy effects. This allows
-for an explicit assessment of the exclusion restriction assumption and
-iteratively refines causal estimates through the
-expectation-maximization algorithm. This approach offers a unique and
-potentially more precise framework compared to existing MR methods.
+`MRLOVA`is an R package designed to enhance Mendelian Randomization (MR)
+analysis by incorporating a latent phenotype of the outcome, which
+enables a more precise disentanglement of horizontal and vertical
+pleiotropy effects. This feature allows for a more explicit assessment
+of the exclusion restriction assumption and iteratively refines causal
+estimates using the expectation-maximization algorithm. Compared to
+existing MR methods, this approach offers a unique and potentially more
+accurate framework.
 
-Furthermore, the package includes permutation testing, which provides a
-non-parametric approach to hypothesis testing, enabling control over the
-type 1 error rate under the null hypothesis without necessitating
-specific distributional assumptions. Additionally, `MRLOVA` offers two
-additional tests: the directional pleiotropy test and the InSIDE
-assumption test.
+In addition to its core functionality, the package includes permutation
+testing, providing a non-parametric method for hypothesis testing that
+controls the type 1 error rate under the null hypothesis without relying
+on specific distributional assumptions. `MRLOVA` also features two
+additional tests: - **Directional Pleiotropy Test:** Assesses whether
+genetic variants influence the outcome through pathways other than the
+exposure of interest. - **InSIDE Assumption Test:** Evaluates whether
+the assumption that Instrument Strength Independent of Direct Effect
+(InSIDE) holds.
 
 There are three functions:
 
@@ -27,25 +31,16 @@ There are three functions:
   causal effect estimate.
 - **`InSIDE()`** performs Instrument Strength Independent of Direct
   Effect (InSIDE) assumption test.
-- **`directional()`** performs directional Pleiotropy test. And you can
-  view their help pages by prepending their names with a question mark:
+- **`directional()`** performs directional Pleiotropy test.
+
+To view the help pages for functions in this package, prepend the
+function name with a question mark
 
 ``` r
-?mr_lova
-#> No documentation for 'mr_lova' in specified packages and libraries:
-#> you could try '??mr_lova'
-```
-
-``` r
-?InSIDE
-#> No documentation for 'InSIDE' in specified packages and libraries:
-#> you could try '??InSIDE'
-```
-
-``` r
-?directional
-#> No documentation for 'directional' in specified packages and libraries:
-#> you could try '??directional'
+#library(MRLOVA)
+#?mr_lova
+#?InSIDE
+#?directional
 ```
 
 ## Installation
@@ -58,23 +53,25 @@ You can install the development version of MRLOVA from
 devtools::install_github("lamessad/MRLOVA")
 ```
 
-## Steps to be followed
+## Steps for Mendelian Randomization Analysis with MRLOVA
 
-Step 1: Load the summary statistics of instrumental variables for the
-exposure and outcome.
+### 1. Load Summary Statistics:
 
-Step 2: Harmonize the data by checking the allele frequency of
-palindromic SNPs and flipping the sign of betaY if the effect allele in
-the study associated with exposure is the non-effect allele in the study
-associated with the outcome.
+- Begin by loading the summary statistics for the instrumental
+  variables. \### 2. Harmonize Data:
+- Check the allele frequencies of palindromic SNPs.
+- Flip the sign of ‘betaY’ if the effect allele in the exposure study
+  differs from the effect allele in the outcome study. \### 3. Harmonize
+  Data:
+- Standardize the summary statistics before performing the MR analysis.
+  This approach follows the guidelines suggested in the MRmix software
+  (Qi and Chatterjee, Nat Commun 2019). \### 4. Perform MR Analysis:
+- Use the standardized and harmonized summary statistics to perform the
+  Mendelian Randomization analysis.
 
-Step 3: Standardize the summary statistics before performing the MR
-analysis. This approach is the same as suggested in the software MRmix
-(Qi and Chatterjee, Nat Commun 2019). step 4; MR analysis
-
-If we are already using the “TwoSampleMR” package, we can utilize the
-harmonized summary data to create the input parameters for MRLOVA as
-follows:
+**Note**: If you are using the “TwoSampleMR” package, you can leverage
+the harmonized summary data to create the input parameters for `MRLOVA`
+as follows:
 
 ``` r
 #library(TwoSampleMR)
@@ -88,13 +85,14 @@ follows:
 #est = mr_lova(betaY, betaX, betaYse, betaXse, ny, 0.05, 5e-8, 100,"log.txt")  
 ```
 
-## Example 1
+## Example
 
 Here is an example demonstrating how to apply MRLOVA methods to infer
 the causal effect from exposure to outcome, assuming the first three
-steps mentioned above have been carried out.
+steps mentioned above have been carried out. \### mr_lova
 
 ``` r
+#MR analysis
 library(MRLOVA)
 data("dat")
 head(dat)
@@ -113,8 +111,13 @@ betaY = dat$betaY
 betaXse = dat$betaXse
 betaYse = dat$betaYse
 ny = dat$ny
-#MR
-est = mr_lova(betaY, betaX, betaYse, betaXse, ny) 
+est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000) 
+#> Warning in mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000): #
+#> permutations may not be sufficient, given the p-value of causal effects, causal
+#> p-value = 4.64046859466231e-28
+```
+
+``` r
 est
 #> $CausEst
 #>  Estimate 
@@ -128,7 +131,7 @@ est
 #>            P 
 #> 4.640469e-28 
 #> 
-#> $SNPP
+#> $IVs
 #>   [1] 6.615865e-190  1.113516e-01  1.971081e-01  7.952652e-01  2.912525e-01
 #>   [6]  3.659330e-01  7.348671e-37  5.409938e-03  6.850492e-01  5.468950e-01
 #>  [11]  4.771970e-01  0.000000e+00  8.501856e-01  9.524966e-01  5.919295e-22
@@ -153,13 +156,20 @@ est
 #> $Valid
 #>  [1]  2  3  4  6  9 11 14 16 19 25 26 27 33 34 35 37 39 40 41 42 43 45 47 48 49
 #> [26] 50 52 53 54 59 60 67 69 72 73 74 77 78 83 85 89 91 92 96 97 99
+#> 
+#> $sig_v
+#>           5% 
+#> 2.167663e-13 
+#> 
+#> $corrected_p
+#> [1] 0
 ```
 
-### Convergence and Permutation Warnings
+#### Warnings
 
 The package includes built-in warnings to help ensure the robustness of
 your analysis. Please be aware of the following conditions and
-corresponding warnings: `Convergence Warnings` If the number of
+corresponding warnings: - **Convergence Warnings** If the number of
 iterations is less than 3 or greater than 10, the package will issue a
 warning:
 
@@ -171,25 +181,23 @@ warning:
 This indicates potential issues with the convergence process. Details of
 the convergence are saved in the `log.txt` file in the directory where
 you are running the analysis. Reviewing this log file can provide
-insights and help troubleshoot potential problems.
-
-`Permutation Warnings` If the number of permutations is less than
-`1/est$CausEstP` of the estimate without permutation, the package will
-issue a warning:
+insights and help troubleshoot potential problems. - **Permutation
+Warnings** If the number of permutations is less than `1/est$CausEstP`
+of the estimate without permutation, the package will issue a warning:
 
 ``` r
 #warning("# permutations may not be sufficient, given the p-value of causal effects, causal p-value = ", mrlova_result$CausEstP)
 #log_message(paste("# permutations may not be sufficient, given the p-value of causal effects, causal p-value =", mrlova_result$CausEstP), log_file)
 ```
 
-# InSIDE
+### InSIDE
 
 ``` r
 # InSIDE assumption test
 inside = InSIDE(betaY, betaX, as.numeric(est$CausEst))  
 
 inside
-#> $cor
+#> [[1]]
 #>       cor 
 #> 0.7847893 
 #> 
@@ -197,7 +205,7 @@ inside
 #> [1] 4.42478e-22
 ```
 
-# direction
+### directional
 
 ``` r
 #directional pleiotropy test
@@ -205,9 +213,8 @@ inside
 dir_pleiotropy=directional(betaY, betaX, as.numeric(est$CausEst))
 
 dir_pleiotropy
-#> $mean
-#> mean of x 
-#> 0.1338896 
+#> $estimate
+#> [1] 0.1338896
 #> 
 #> $p_value
 #> [1] 1.620467e-05

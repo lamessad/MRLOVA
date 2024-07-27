@@ -1,15 +1,15 @@
 #' Mendelian Randomization Analysis
 #'
-#' @description This function conducts Mendelian randomization analysis based on the latent phenotype of the outcome by explicitly excluding vertical pleiotropy variants. It iteratively refines the causal relationship through an Expectation-Maximisation (EM) algorithm. MRLOVA takes GWAS summary statistics as inputs to estimate the causal effects of one trait on another. We recommend using summary statistics on a standardized scale.
+#' @description This function conducts Mendelian randomization analysis based on the latent phenotype of the outcome, explicitly excluding horizontal pleiotropy variants. It iteratively refines the causal relationship through an Expectation-Maximization (EM) algorithm. MRLOVA uses GWAS summary statistics as inputs to estimate the causal effects of one trait on another. We recommend using summary statistics on a standardized scale.
 #' @param betaY beta of the outcome, recommended to be in standardized scale.
 #' @param betaX beta of the exposure, recommended to be in standardized scale.
 #' @param betaYse standard error of the outcome, recommended to be in standardized scale.
 #' @param betaXse standard error of the exposure, recommended to be in standardized scale.
 #' @param ny sample size of outcome GWAS.
-#' @param gwas_p p-value of association between variants and the latent phenotype ( the direct genetic effect), Default: 5e-2.
-#' @param gwas_p2 p-value of exposure GWAS, Default: 5e-8.
+#' @param gwas_p p-value threshold for the association between variants and the latent phenotype (the direct genetic effect). Default: 5e-2.
+#' @param gwas_p2 p-value threshold for exposure GWAS used in instrument variable selection. Default: 5e-8
 #' @param permutn number of permutations, Default: 0.
-#' @param log_file save the iteration to check the convergence, Default: NULL.
+#' @param log_file file name for saving the iterations to check convergence. Default: NULL.
 #' @details None.
 #' @keywords Mendelian randomization.
 #' @importFrom stats cor ecdf lm pchisq pt quantile
@@ -18,11 +18,9 @@
 #' \item{CausEst}{Estimate of causal effect.}
 #' \item{CausEstSE}{Standard error of causal effect estimate.}
 #' \item{CausEstP}{P-value from the z test for the causal effect.}
-#' \item{IVs}{P-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
+#' \item{IVs}{p-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
 #' \item{Valid}{Index of valid  instrumental variants.}
-#' \item{corrected_p-value}{P-value from permutation tests.}
-
-
+#' \item{corrected_p-value}{p-value from permutation tests.}
 
 mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 = 5e-8, permutn = 0, log_file = NULL) {
 
@@ -40,6 +38,7 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
     yi <- 0
     tau_t <- -99999
     a3_p <- pchisq((betaX / betaXse)^2, df = 1, lower.tail = FALSE)
+
     while (tau_t != ivw[1] & yi <= 10) {
       yi <- yi + 1
       tau_t <- ivw[1]
@@ -50,10 +49,8 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
       gwas5[, 3] <- gwas5[, 1] / gwas5[, 2]
       gwas5[, 4] <- pchisq(gwas5[, 3]^2, df = 1, lower.tail = FALSE)
       svv <- sv1[gwas5[, 4] > gwas_p & a3_p < gwas_p2]
-
-      log_message(paste("Iteration:", yi, "tau_t:", tau_t, "ivw[1]:", ivw[1]), log_file)
-
       ivw <- IVW(betaY[svv], betaX[svv], betaYse[svv])
+      log_message(paste("iter", yi, ivw[1], "SE", ivw[2], "P", ivw[4]), log_file)
     }
 
     if (yi < 3 | yi > 10) {
@@ -69,12 +66,11 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
   mrlova_result <- mrlova(betaY, betaX, betaYse, betaXse, ny, gwas_p, gwas_p2, log_file)
 
   if (permutn > 0) {
-
     permutp <- numeric(permutn)
 
     for (zi in seq_len(permutn)) {
       sv2 <- sample(seq_along(betaX))
-      mrlova_permutation <- mrlova(betaY[sv2], betaX, betaYse[sv2], betaXse, ny, gwas_p, gwas_p2, log_file)
+      mrlova_permutation <- suppressWarnings(mrlova(betaY[sv2], betaX, betaYse[sv2], betaXse, ny, gwas_p, gwas_p2, log_file = NULL))
       permutp[zi] <- mrlova_permutation$CausEstP
     }
 
@@ -86,14 +82,18 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
       log_message(paste("# permutations may not be sufficient, given the p-value of causal effects, causal p-value =", mrlova_result$CausEstP), log_file)
     }
 
-    result <- list(CausEst=mrlova_result$CausEst,CausEstSE=mrlova_result$CausEstSE, CausEstP=mrlova_result$CausEstP, IVs=mrlova_result$SNPP, Valid=mrlova_result$Valid, sig_v=permutt, corrected_p=permutt2)
+    result <- list(CausEst = mrlova_result$CausEst,
+                   CausEstSE = mrlova_result$CausEstSE,
+                   CausEstP = mrlova_result$CausEstP,
+                   IVs = mrlova_result$SNPP,
+                   Valid = mrlova_result$Valid,
+                   sig_v = permutt,
+                   corrected_p = permutt2)
   } else {
-
     result <- mrlova_result
   }
 
   return(result)
 }
-
 
 

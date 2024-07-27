@@ -27,25 +27,25 @@ mr_lova(
 
 \item{ny}{sample size of outcome GWAS.}
 
-\item{gwas_p}{p-value of association between variants and the latent phenotype ( the direct genetic effect), Default: 5e-2.}
+\item{gwas_p}{p-value threshold for the association between variants and the latent phenotype (the direct genetic effect). Default: 5e-2.}
 
-\item{gwas_p2}{p-value of exposure GWAS, Default: 5e-8.}
+\item{gwas_p2}{p-value threshold for exposure GWAS used in instrument variable selection. Default: 5e-8}
 
 \item{permutn}{number of permutations, Default: 0.}
 
-\item{log_file}{save the iteration to check the convergence, Default: NULL.}
+\item{log_file}{file name for saving the iterations to check convergence. Default: NULL.}
 }
 \value{
 A list that contains
 \item{CausEst}{Estimate of causal effect.}
 \item{CausEstSE}{Standard error of causal effect estimate.}
 \item{CausEstP}{P-value from the z test for the causal effect.}
-\item{IVs}{P-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
+\item{IVs}{p-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
 \item{Valid}{Index of valid  instrumental variants.}
-\item{corrected_p-value}{P-value from permutation tests.}
+\item{corrected_p-value}{p-value from permutation tests.}
 }
 \description{
-This function conducts Mendelian randomization analysis based on the latent phenotype of the outcome by explicitly excluding vertical pleiotropy variants. It iteratively refines the causal relationship through an Expectation-Maximisation (EM) algorithm. MRLOVA takes GWAS summary statistics as inputs to estimate the causal effects of one trait on another. We recommend using summary statistics on a standardized scale.
+This function conducts Mendelian randomization analysis based on the latent phenotype of the outcome, explicitly excluding horizontal pleiotropy variants. It iteratively refines the causal relationship through an Expectation-Maximization (EM) algorithm. MRLOVA uses GWAS summary statistics as inputs to estimate the causal effects of one trait on another. We recommend using summary statistics on a standardized scale.
 }
 \details{
 None.
