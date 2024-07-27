@@ -55,13 +55,16 @@ devtools::install_github("lamessad/MRLOVA")
 -  Begin by loading the summary statistics for the instrumental variables.
 
 **2. Harmonize Data:**
+
 -  Check the allele frequencies of palindromic SNPs.
 -  Flip the sign of `betaY` if the effect allele in the exposure study differs from the effect allele in the outcome study.
 
 **3. Harmonize Data:**
+
 -  Standardize the summary statistics before performing the MR analysis. This approach follows the guidelines suggested in the MRmix software (Qi and Chatterjee, Nat Commun 2019).
 
 **4. Perform MR Analysis:**
+
 -  Use the standardized and harmonized summary statistics to perform the Mendelian Randomization analysis.
 
 **Note**: If you are using the **“TwoSampleMR”** package, you can leverage the harmonized summary data to create the input parameters for `MRLOVA` as follows:
