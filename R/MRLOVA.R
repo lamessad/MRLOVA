@@ -20,7 +20,8 @@
 #' \item{CausEstP}{P-value from the z test for the causal effect.}
 #' \item{IVs}{p-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
 #' \item{Valid}{Index of valid  instrumental variants.}
-#' \item{corrected_p-value}{p-value from permutation tests.}
+#' \item{sig_v}{the 5th percentile of the permuted p-values.}
+#' \item{corrected_p-value}{corrected p-value based on the permutation distribution.}
 
 mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 = 5e-8, permutn = 0, log_file = NULL) {
 
@@ -78,8 +79,8 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
     permutt2 <- ecdf(permutp)(mrlova_result$CausEstP)
 
     if (1 / mrlova_result$CausEstP > permutn) {
-      warning("# permutations may not be sufficient, given the p-value of causal effects, causal p-value = ", mrlova_result$CausEstP)
-      log_message(paste("# permutations may not be sufficient, given the p-value of causal effects, causal p-value =", mrlova_result$CausEstP), log_file)
+      warning("To get a more precise p-value, it is recommended to increase the number of permutations, given the p-value of causal effects  =  ", mrlova_result$CausEstP)
+      log_message(paste("To get a more precise p-value, it is recommended to increase the number of permutations, given the p-value of causal effects  =  ", mrlova_result$CausEstP), log_file)
     }
 
     result <- list(CausEst = mrlova_result$CausEst,

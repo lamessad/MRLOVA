@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# MRLOVA
+# MR LOVA (Latent Outcome Variable Approach)
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 In addition to its core functionality, the package includes permutation testing, providing a non-parametric method for hypothesis testing that controls the type 1 error rate under the null hypothesis without relying on specific distributional assumptions. 
 
-**`MRLOVA`** also features two additional tests:
+**`MRLOVA`** also features two additional statistical tests:
 
 -  **Directional Pleiotropy Test:**  Assesses whether genetic variants influence the outcome through pathways other than the exposure of interest.
 -  **InSIDE Assumption Test:** Evaluates whether the assumption that Instrument Strength Independent of Direct Effect (InSIDE) holds.
@@ -59,7 +59,7 @@ devtools::install_github("lamessad/MRLOVA")
 -  Check the allele frequencies of palindromic SNPs.
 -  Flip the sign of `betaY` if the effect allele in the exposure study differs from the effect allele in the outcome study.
 
-**3. Harmonize Data:**
+**3. Standardize data:**
 
 -  Standardize the summary statistics before performing the MR analysis. This approach follows the guidelines suggested in the MRmix software (Qi and Chatterjee, Nat Commun 2019).
 
@@ -69,21 +69,28 @@ devtools::install_github("lamessad/MRLOVA")
 
 **Note**: If you are using the **“TwoSampleMR”** package, you can leverage the harmonized summary data to create the input parameters for `MRLOVA` as follows:
 
+-  **Continuous outcome** - the summary statistics are standardized as z-statistics and then rescaled by the sample size.
+
+-  **Binary outcome** - If the effect size of the outcome GWAS summary data was reported in Odds Ratio (OR), convert the OR to log(OR). Then, standardize by multiplying the log(OR) by the square root of the genotypic variance, calculated as `2*MAF*(1-MAF)` under Hardy-Weinberg equilibrium.
+
 ``` r
 #library(TwoSampleMR)
 #library(MRLOVA)
 #dat=harmonize_data(exposure_data, outcome_data)
 #detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
-#betaY=dat$z.outcome/sqrt(dat$samplesize.outcome)
+#betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) #Continous outcome
+#betaY=dat$log(OR).outcome*sqrt(2*dat$eaf.outcome*(1-dat$eaf.outcome))#Binary outcome
 #betaXse=1/sqrt(dat$samplesize.exposure)
-#betaYse=1/sqrt(dat$samplesize.outcome)
+#betaYse=1/sqrt(dat$samplesize.outcome)##Continous outcome 
+#betaY=dat$se.outcome*sqrt(2*dat$eaf.outcome*(1-dat$eaf.outcome))#Binary outcome
 #ny=dat$samplesize.outcome
 #est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000,log_file = "log.txt")  
 ```
-## Example 
+
+## Example
 
 Here is an example demonstrating how to apply MRLOVA methods to infer the causal effect from exposure to outcome, assuming the  first three steps mentioned above have been carried out.
-### mr_lova
+
 
 ```{r example}
 #MR analysis
@@ -112,20 +119,35 @@ The package includes built-in warnings to help ensure the robustness of your ana
 This indicates potential issues with the convergence process. Details of the convergence are saved in the `log.txt` file in the directory where you are running the analysis. Reviewing this log file can provide insights and help troubleshoot potential problems.
 
 **Permutation Warnings**
--  If the number of permutations is less than `1/est$CausEstP` of the estimate without permutation, the package will issue a warning:
+-  Performing 1000 permutations is typically sufficient for most analyses. However, for a more accurate p-value, increasing the number of permutations is recommended. Ideally, the number of permutations should exceed `1 / causal effect p-value`, although this can be impractical. If the number of permutations is less than `1/est$CausEstP` (where `est$CausEstP` is the estimated p-value without permutation), the package will issue a warning:
+
 ```r
-#warning("# permutations may not be sufficient, given the p-value of causal effects, causal p-value = ", mrlova_result$CausEstP)
-#log_message(paste("# permutations may not be sufficient, given the p-value of causal effects, causal p-value =", mrlova_result$CausEstP), log_file)
+#warning("#To get a more precise p-value, it is recommended to increase the number of permutations, given the p-value of causal effects  =  ", est$CausEstP)
+#log_message(paste("# To get a more precise p-value, increasing the number of permutations is recommended, given the p-value of causal effects, p-value of causal effect  =  ", est$CausEstP), log_file)
 ```
+Here are two outputs of the permutation analysis: `est$sig_v`(the 5th percentile of the permuted p-values) and `corrected_p`(the corrected p-value based on the permutation distribution). The permuted p-values form an empirical null distribution under the assumption of no effect. The 5th percentile of this distribution provides a threshold or critical value for significance. If `est$CausEstP` is less than `est$sig_v`,  it indicates that the observed p-value is unusually small compared to what is expected under the null hypothesis. The `corrected_p` is the proportion of permuted p-values that are less than or equal to the observed p-value (`est$CausEstP`) without permutation.
+
 ### InSIDE
+
+**1. Using all instrumental variables:**
 
 ```{r}
 # InSIDE assumption test
-inside = InSIDE(betaY, betaX, as.numeric(est$CausEst))  
+inside_all = InSIDE(betaY, betaX, as.numeric(est$CausEst))  
+inside_all
+```
+
+**2. Using only valid instrumental variables:** The `MRLOVA` package identifies valid instrumental variables, and their indices are listed in the analysis output as `est$Valid`.
+
+```{r}
+# InSIDE assumption test
+inside = InSIDE(betaY[est$Valid], betaX[est$Valid], as.numeric(est$CausEst))  
 inside
 ```
 
 ### directional
+
+**1. Using all instrumental variables:**
 
 ```{r}
 #directional pleiotropy test
@@ -133,4 +155,16 @@ dir_pleiotropy=directional(betaY, betaX, as.numeric(est$CausEst))
 dir_pleiotropy
 ```
 
+**2. Using only valid instrumental variables:**
 
+```{r}
+#directional pleiotropy test
+dir_pleiotropy=directional(betaY[est$Valid], betaX[est$Valid], as.numeric(est$CausEst))
+dir_pleiotropy
+```
+
+**Note**: This novel statistical test has more statistical power than the MR-Egger intercept for detecting directional pleiotropy, while also controlling the Type I error rate(refer the manuscript).
+
+## Contact
+
+Please contact Lamessa Amente (lamessa.amente@mymail.unisa.edu.au) or Hong Lee (hong.lee@unisa.edu.au) if you have any queries.

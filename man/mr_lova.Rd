@@ -42,7 +42,8 @@ A list that contains
 \item{CausEstP}{P-value from the z test for the causal effect.}
 \item{IVs}{p-values for the direct causal effect of all Instrumental Variants (IV) on the outcome.}
 \item{Valid}{Index of valid  instrumental variants.}
-\item{corrected_p-value}{p-value from permutation tests.}
+\item{sig_v}{the 5th percentile of the permuted p-values.}
+\item{corrected_p-value}{corrected p-value based on the permutation distribution.}
 }
 \description{
 This function conducts Mendelian randomization analysis based on the latent phenotype of the outcome, explicitly excluding horizontal pleiotropy variants. It iteratively refines the causal relationship through an Expectation-Maximization (EM) algorithm. MRLOVA uses GWAS summary statistics as inputs to estimate the causal effects of one trait on another. We recommend using summary statistics on a standardized scale.
