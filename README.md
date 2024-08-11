@@ -65,14 +65,15 @@ devtools::install_github("lamessad/MRLOVA")
 
 **2. Harmonize Data:**
 
-- Check the allele frequencies of palindromic SNPs.
+- Check the alleles and effects between the exposure and outcome
+  studies.
 - Flip the sign of `betaY` if the effect allele in the exposure study
   differs from the effect allele in the outcome study.
 
 **3. Standardize data:**
 
 - Standardize the summary statistics before performing the MR analysis.
-  he summary statistics are standardized as z-statistics and then
+  The summary statistics are standardized as z-statistics and then
   rescaled by the sample size for both continuous and binary traits.
 
 **4. Perform MR Analysis:**
@@ -107,13 +108,13 @@ leverage the harmonized summary data to create the input parameters for
 ## Example
 
 Here is an example demonstrating how to apply MRLOVA methods to infer
-the causal effect from exposure to outcome, assuming the first three
-steps mentioned above have been carried out.
+the causal effect from exposure to outcome, assuming the first two steps
+mentioned above have been carried out.
 
 ``` r
 #MR analysis
 library(MRLOVA)
-data("dat")
+data("dat")#not 
 head(dat)
 #>        betaX    betaXse        betaY    betaYse    ny
 #> 1 0.85315066 0.01493736  1.103462683 0.02275630 1e+05
@@ -125,57 +126,58 @@ head(dat)
 ```
 
 ``` r
-betaX = dat$betaX 
-betaY = dat$betaY
-betaXse = dat$betaXse
-betaYse = dat$betaYse
+dat$nx=dat$ny # sample size of exposure
+betaX = dat$betaX/dat$betaXse/sqrt(dat$nx)
+betaY = dat$betaY/dat$betaYse/sqrt(dat$ny)
+betaXse = 1/sqrt(dat$nx)
+betaYse = 1/sqrt(dat$ny)
 ny = dat$ny
 est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000) 
 #> Warning in mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000): To get
 #> a more precise p-value, it is recommended to increase the number of
-#> permutations, given the p-value of causal effects = 4.64046859466231e-28
+#> permutations, given the p-value of causal effects = 1.17462227053672e-25
 ```
 
 ``` r
 est
 #> $CausEst
-#> [1] 0.5142296
+#> [1] 0.338072
 #> 
 #> $CausEstSE
-#> [1] 0.02053385
+#> [1] 0.01383628
 #> 
 #> $CausEstP
-#> [1] 4.640469e-28
+#> [1] 1.174622e-25
 #> 
 #> $IVs
-#>   [1] 6.615865e-190  1.113516e-01  1.971081e-01  7.952652e-01  2.912525e-01
-#>   [6]  3.659330e-01  7.348671e-37  5.409938e-03  6.850492e-01  5.468950e-01
-#>  [11]  4.771970e-01  0.000000e+00  8.501856e-01  9.524966e-01  5.919295e-22
-#>  [16]  8.590236e-01  3.261935e-21  1.260326e-02  8.201112e-01 1.028667e-126
-#>  [21]  9.282667e-01  1.473534e-02  6.035096e-01  3.403586e-02  6.538054e-01
-#>  [26]  3.183142e-01  9.628735e-01  7.583114e-01  6.196335e-02  4.003864e-02
-#>  [31]  4.053961e-01  2.671107e-46  9.729690e-01  6.255681e-02  9.624724e-01
-#>  [36]  4.075133e-10  3.791737e-01 8.348075e-166  9.744868e-01  8.942730e-01
-#>  [41]  1.891448e-01  1.007077e-01  9.928422e-01  3.104539e-01  9.359081e-01
-#>  [46] 3.226988e-265  5.661112e-01  2.595720e-01  9.283617e-01  9.240324e-01
-#>  [51]  0.000000e+00  6.937718e-01  4.490627e-01  7.017550e-01  0.000000e+00
-#>  [56]  7.562262e-01 3.934105e-286  9.721216e-76  4.577651e-01  3.586034e-01
-#>  [61] 1.780989e-210  5.034448e-01  1.161396e-84  1.360985e-48  0.000000e+00
-#>  [66]  5.047572e-01  1.039080e-01  7.184237e-01  2.726579e-01  2.271982e-02
-#>  [71]  9.640004e-01  8.906684e-01  4.637285e-01  8.699707e-01  1.500034e-82
-#>  [76]  7.399201e-02  5.970349e-01  2.482544e-01 1.556953e-215  8.173761e-07
-#>  [81] 1.192874e-264  7.392510e-01  2.151794e-01  6.386109e-52  5.648529e-02
-#>  [86]  4.667167e-02  0.000000e+00 6.266908e-210  4.030541e-01  2.866828e-01
-#>  [91]  8.123083e-01  6.865125e-01  9.490333e-01  0.000000e+00  0.000000e+00
-#>  [96]  3.254062e-01  9.655269e-01  0.000000e+00  7.134955e-01  1.408646e-01
+#>   [1]  0.000000e+00  2.726007e-02  7.790426e-02  9.916483e-01  1.434340e-01
+#>   [6]  2.109689e-01  8.345624e-68  1.281148e-04  5.792920e-01  4.060073e-01
+#>  [11]  3.169787e-01  0.000000e+00  8.007780e-01  9.257839e-01  1.266553e-39
+#>  [16]  8.154406e-01  4.525763e-38  6.405958e-04  7.576975e-01 4.858962e-234
+#>  [21]  9.017435e-01  7.279847e-04  4.751810e-01  3.282271e-03  5.379763e-01
+#>  [26]  1.700118e-01  9.558248e-01  6.680886e-01  1.016138e-02  4.648153e-03
+#>  [31]  2.537098e-01  1.888917e-86  9.642804e-01  1.021426e-02  9.383683e-01
+#>  [36]  5.601607e-18  2.234118e-01 5.278566e-311  9.622360e-01  8.652901e-01
+#>  [41]  6.723178e-02  2.395406e-02  9.946421e-01  1.615649e-01  8.842703e-01
+#>  [46]  0.000000e+00  4.322573e-01  1.252075e-01  9.039271e-01  9.074447e-01
+#>  [51]  0.000000e+00  5.873736e-01  2.972120e-01  5.963484e-01  0.000000e+00
+#>  [56]  6.681700e-01  0.000000e+00 1.141793e-140  3.080328e-01  2.109287e-01
+#>  [61]  0.000000e+00  3.557337e-01 9.177200e-159  1.237713e-90  0.000000e+00
+#>  [66]  3.565802e-01  2.648228e-02  6.289434e-01  1.262372e-01  1.673632e-03
+#>  [71]  9.548446e-01  8.465089e-01  3.137614e-01  8.260025e-01 1.417906e-153
+#>  [76]  1.459041e-02  4.677599e-01  1.133160e-01  0.000000e+00  1.174469e-11
+#>  [81]  0.000000e+00  6.461811e-01  8.840330e-02  2.193040e-94  8.092369e-03
+#>  [86]  6.103384e-03  0.000000e+00  0.000000e+00  2.546705e-01  1.408883e-01
+#>  [91]  7.517597e-01  5.864770e-01  9.289636e-01  0.000000e+00  0.000000e+00
+#>  [96]  1.759770e-01  9.665809e-01  0.000000e+00  6.080421e-01  4.277376e-02
 #> 
 #> $Valid
-#>  [1]  2  3  4  6  9 11 14 16 19 25 26 27 33 34 35 37 39 40 41 42 43 45 47 48 49
-#> [26] 50 52 53 54 59 60 67 69 72 73 74 77 78 83 85 89 91 92 96 97 99
+#>  [1]  3  4  6  9 11 14 16 19 25 26 27 33 35 37 39 40 41 43 45 47 48 49 50 52 53
+#> [26] 54 59 60 69 72 73 74 77 78 83 89 91 92 96 97 99
 #> 
 #> $sig_v
 #>           5% 
-#> 1.292484e-13 
+#> 1.753351e-13 
 #> 
 #> $corrected_p
 #> [1] 0
@@ -235,10 +237,10 @@ inside_all = InSIDE(betaY, betaX, as.numeric(est$CausEst))
 inside_all
 #> [[1]]
 #>       cor 
-#> 0.7847893 
+#> 0.7927623 
 #> 
 #> $p_value
-#> [1] 4.42478e-22
+#> [1] 8.572826e-23
 ```
 
 **2. Using only valid instrumental variables:** The `MRLOVA` package
@@ -250,11 +252,11 @@ the analysis output as `est$Valid`.
 inside = InSIDE(betaY[est$Valid], betaX[est$Valid], as.numeric(est$CausEst))  
 inside
 #> [[1]]
-#>          cor 
-#> -0.005224511 
+#>         cor 
+#> -0.01718479 
 #> 
 #> $p_value
-#> [1] 0.9725108
+#> [1] 0.9150736
 ```
 
 ### directional
@@ -266,10 +268,10 @@ inside
 dir_pleiotropy=directional(betaY, betaX, as.numeric(est$CausEst))
 dir_pleiotropy
 #> $estimate
-#> [1] 0.1338896
+#> [1] 0.02520747
 #> 
 #> $p_value
-#> [1] 1.620467e-05
+#> [1] 2.094721e-05
 ```
 
 **2. Using only valid instrumental variables:**
@@ -279,10 +281,10 @@ dir_pleiotropy
 dir_pleiotropy=directional(betaY[est$Valid], betaX[est$Valid], as.numeric(est$CausEst))
 dir_pleiotropy
 #> $estimate
-#> [1] -0.0006977647
+#> [1] 3.091524e-05
 #> 
 #> $p_value
-#> [1] 0.7611694
+#> [1] 0.9250098
 ```
 
 **Note**: This novel statistical test has more statistical power than

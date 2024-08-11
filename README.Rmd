@@ -56,12 +56,12 @@ devtools::install_github("lamessad/MRLOVA")
 
 **2. Harmonize Data:**
 
--  Check the allele frequencies of palindromic SNPs.
+-  Check the alleles and effects between the exposure and outcome studies.
 -  Flip the sign of `betaY` if the effect allele in the exposure study differs from the effect allele in the outcome study.
 
 **3. Standardize data:**
 
--  Standardize the summary statistics before performing the MR analysis. he summary statistics are standardized as z-statistics and then rescaled by the sample size for both continuous and binary traits.
+-  Standardize the summary statistics before performing the MR analysis. The summary statistics are standardized as z-statistics and then rescaled by the sample size for both continuous and binary traits.
 
 **4. Perform MR Analysis:**
 
@@ -87,18 +87,19 @@ devtools::install_github("lamessad/MRLOVA")
 
 ## Example
 
-Here is an example demonstrating how to apply MRLOVA methods to infer the causal effect from exposure to outcome, assuming the  first three steps mentioned above have been carried out.
+Here is an example demonstrating how to apply MRLOVA methods to infer the causal effect from exposure to outcome, assuming the  first two steps mentioned above have been carried out.
 
 
 ```{r example}
 #MR analysis
 library(MRLOVA)
-data("dat")
+data("dat")#not 
 head(dat)
-betaX = dat$betaX 
-betaY = dat$betaY
-betaXse = dat$betaXse
-betaYse = dat$betaYse
+dat$nx=dat$ny # sample size of exposure
+betaX = dat$betaX/dat$betaXse/sqrt(dat$nx)
+betaY = dat$betaY/dat$betaYse/sqrt(dat$ny)
+betaXse = 1/sqrt(dat$nx)
+betaYse = 1/sqrt(dat$ny)
 ny = dat$ny
 est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000) 
 est
