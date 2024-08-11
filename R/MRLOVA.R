@@ -39,6 +39,7 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
     yi <- 0
     tau_t <- -99999
     a3_p <- pchisq((betaX / betaXse)^2, df = 1, lower.tail = FALSE)
+    log_message(paste("iter", yi, ivw[1], "SE", ivw[2], "P", ivw[4]), log_file)
 
     while (tau_t != ivw[1] & yi <= 10) {
       yi <- yi + 1
@@ -83,9 +84,9 @@ mr_lova <- function(betaY, betaX, betaYse, betaXse, ny, gwas_p = 5e-2, gwas_p2 =
       log_message(paste("To get a more precise p-value, it is recommended to increase the number of permutations, given the p-value of causal effects  =  ", mrlova_result$CausEstP), log_file)
     }
 
-    result <- list(CausEst = mrlova_result$CausEst,
-                   CausEstSE = mrlova_result$CausEstSE,
-                   CausEstP = mrlova_result$CausEstP,
+    result <- list(CausEst = as.numeric(mrlova_result$CausEst),
+                   CausEstSE = as.numeric(mrlova_result$CausEstSE),
+                   CausEstP = as.numeric(mrlova_result$CausEstP),
                    IVs = mrlova_result$SNPP,
                    Valid = mrlova_result$Valid,
                    sig_v = permutt,

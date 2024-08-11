@@ -72,8 +72,8 @@ devtools::install_github("lamessad/MRLOVA")
 **3. Standardize data:**
 
 - Standardize the summary statistics before performing the MR analysis.
-  This approach follows the guidelines suggested in the MRmix software
-  (Qi and Chatterjee, Nat Commun 2019).
+  he summary statistics are standardized as z-statistics and then
+  rescaled by the sample size for both continuous and binary traits.
 
 **4. Perform MR Analysis:**
 
@@ -89,20 +89,17 @@ leverage the harmonized summary data to create the input parameters for
 
 - **Binary outcome** - If the effect size of the outcome GWAS summary
   data was reported in Odds Ratio (OR), convert the OR to log(OR). Then,
-  standardize by multiplying the log(OR) by the square root of the
-  genotypic variance, calculated as `2*MAF*(1-MAF)` under Hardy-Weinberg
-  equilibrium.
+  the summary statistics are standardized as z-statistics and then
+  rescaled by the sample size.
 
 ``` r
 #library(TwoSampleMR)
 #library(MRLOVA)
 #dat=harmonize_data(exposure_data, outcome_data)
 #detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
-#betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) #Continous outcome
-#betaY=dat$log(OR).outcome*sqrt(2*dat$eaf.outcome*(1-dat$eaf.outcome))#Binary outcome
+#betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) 
 #betaXse=1/sqrt(dat$samplesize.exposure)
-#betaYse=1/sqrt(dat$samplesize.outcome)##Continous outcome 
-#betaY=dat$se.outcome*sqrt(2*dat$eaf.outcome*(1-dat$eaf.outcome))#Binary outcome
+#betaYse=1/sqrt(dat$samplesize.outcome)
 #ny=dat$samplesize.outcome
 #est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000,log_file = "log.txt")  
 ```
@@ -142,16 +139,13 @@ est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000)
 ``` r
 est
 #> $CausEst
-#>  Estimate 
-#> 0.5142296 
+#> [1] 0.5142296
 #> 
 #> $CausEstSE
-#>         SE 
-#> 0.02053385 
+#> [1] 0.02053385
 #> 
 #> $CausEstP
-#>            P 
-#> 4.640469e-28 
+#> [1] 4.640469e-28
 #> 
 #> $IVs
 #>   [1] 6.615865e-190  1.113516e-01  1.971081e-01  7.952652e-01  2.912525e-01
@@ -180,8 +174,8 @@ est
 #> [26] 50 52 53 54 59 60 67 69 72 73 74 77 78 83 85 89 91 92 96 97 99
 #> 
 #> $sig_v
-#>          5% 
-#> 1.22523e-13 
+#>           5% 
+#> 1.292484e-13 
 #> 
 #> $corrected_p
 #> [1] 0
@@ -225,10 +219,11 @@ p-value based on the permutation distribution). The permuted p-values
 form an empirical null distribution under the assumption of no effect.
 The 5th percentile of this distribution provides a threshold or critical
 value for significance. If `est$CausEstP` is less than `est$sig_v`, it
-indicates that the observed p-value is unusually small compared to what
-is expected under the null hypothesis. The `corrected_p` is the
+indicates that the observed p-value is significantly smaller than what
+would be expected under the null hypothesis. The `corrected_p` is the
 proportion of permuted p-values that are less than or equal to the
-observed p-value (`est$CausEstP`) without permutation.
+observed p-value (`est$CausEstP`), representing the corrected p-value
+based on permutation.
 
 ### InSIDE
 
