@@ -96,7 +96,7 @@ leverage the harmonized summary data to create the input parameters for
 ``` r
 #library(TwoSampleMR)
 #library(MRLOVA)
-#dat=harmonize_data(exposure_data, outcome_data)
+#dat=harmonise_data(exposure_data, outcome_data)
 #detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
 #betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) 
 #betaXse=1/sqrt(dat$samplesize.exposure)
@@ -123,9 +123,6 @@ head(dat)
 #> 4 0.56542496 0.01039496  0.294865158 0.01602819 1e+05
 #> 5 0.03413034 0.01511759 -0.006703383 0.02312029 1e+05
 #> 6 0.06143616 0.01089646  0.016728266 0.01663377 1e+05
-```
-
-``` r
 dat$nx=dat$ny # sample size of exposure
 betaX = dat$betaX/dat$betaXse/sqrt(dat$nx)
 betaY = dat$betaY/dat$betaYse/sqrt(dat$ny)
@@ -136,9 +133,6 @@ est = mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000)
 #> Warning in mr_lova(betaY, betaX, betaYse, betaXse, ny, permutn = 1000): To get
 #> a more precise p-value, it is recommended to increase the number of
 #> permutations, given the p-value of causal effects = 1.17462227053672e-25
-```
-
-``` r
 est
 #> $CausEst
 #> [1] 0.338072
@@ -177,7 +171,7 @@ est
 #> 
 #> $sig_v
 #>           5% 
-#> 1.753351e-13 
+#> 1.694689e-13 
 #> 
 #> $corrected_p
 #> [1] 0
