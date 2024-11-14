@@ -76,7 +76,7 @@ devtools::install_github("lamessad/MRLOVA")
 ``` r
 #library(TwoSampleMR)
 #library(MRLOVA)
-#dat=harmonise_data(exposure_data, outcome_data)
+#dat=harmonise_data(exposure_data, outcome_data)#The exposure_data and outcome_data should be prepared by the user based on the input format required by the harmonise_data() function from the twosampleMR package. 
 #detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
 #betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) 
 #betaXse=1/sqrt(dat$samplesize.exposure)

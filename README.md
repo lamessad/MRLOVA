@@ -96,7 +96,7 @@ leverage the harmonized summary data to create the input parameters for
 ``` r
 #library(TwoSampleMR)
 #library(MRLOVA)
-#dat=harmonise_data(exposure_data, outcome_data)
+#dat=harmonise_data(exposure_data, outcome_data)#The exposure_data and outcome_data should be prepared by the user based on the input format required by the harmonise_data() function from the twosampleMR package. 
 #detaX=dat$z.exposure/sqrt(dat$samplesize.exposure)
 #betaY=dat$z.outcome/sqrt(dat$samplesize.outcome) 
 #betaXse=1/sqrt(dat$samplesize.exposure)
@@ -171,7 +171,7 @@ est
 #> 
 #> $sig_v
 #>           5% 
-#> 1.694689e-13 
+#> 3.745906e-13 
 #> 
 #> $corrected_p
 #> [1] 0
